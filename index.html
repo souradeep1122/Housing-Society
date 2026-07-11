@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Housing Society Management — Finance-First Society Platform</title>
+<meta name="description" content="Manage maintenance billing, online payments, expenses, complaints and notices for your housing society — transparently, in one place.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0A2647;
+    --navy-2:#123A6B;
+    --ink:#0B1F3A;
+    --teal:#0FB88A;
+    --teal-deep:#0A9B74;
+    --gold:#C99A3D;
+    --bg:#F3F7FB;
+    --bg-2:#EAF2F8;
+    --card:#FFFFFF;
+    --line:#E1E8F0;
+    --muted:#5B6B85;
+    --radius:18px;
+    --shadow: 0 20px 45px -25px rgba(10,38,71,0.35);
+    --shadow-sm: 0 10px 25px -15px rgba(10,38,71,0.25);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    font-family:'Inter',sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(1200px 600px at 85% -10%, rgba(15,184,138,0.08), transparent 60%),
+      radial-gradient(900px 500px at -10% 10%, rgba(18,58,107,0.07), transparent 60%),
+      var(--bg);
+    overflow-x:hidden;
+  }
+  h1,h2,h3,h4{font-family:'Plus Jakarta Sans',sans-serif; margin:0; color:var(--navy);}
+  p{margin:0; color:var(--muted); line-height:1.65;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  a{text-decoration:none;color:inherit;}
+  ul{margin:0;padding:0;list-style:none;}
+  img,svg{display:block;}
+  .wrap{max-width:1200px;margin:0 auto;padding:0 28px;}
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:8px;
+    font-family:'IBM Plex Mono',monospace;font-size:12.5px;letter-spacing:.08em;
+    text-transform:uppercase;color:var(--teal-deep);
+    background:rgba(15,184,138,0.1);
+    border:1px solid rgba(15,184,138,0.25);
+    padding:6px 14px;border-radius:100px;font-weight:600;
+  }
+  .section{padding:110px 0;}
+  .section-head{max-width:660px;margin:0 auto 56px;text-align:center;}
+  .section-head h2{font-size:clamp(28px,3.6vw,40px);letter-spacing:-0.01em;margin-top:14px;}
+  .section-head p{margin-top:14px;font-size:16.5px;}
+
+  /* ===== blueprint grid background (signature motif) ===== */
+  .blueprint{
+    position:absolute; inset:0; z-index:0; opacity:.5;
+    background-image:
+      linear-gradient(rgba(10,38,71,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(10,38,71,0.05) 1px, transparent 1px);
+    background-size: 42px 42px;
+    -webkit-mask-image: radial-gradient(ellipse 70% 60% at 60% 20%, black 10%, transparent 75%);
+    mask-image: radial-gradient(ellipse 70% 60% at 60% 20%, black 10%, transparent 75%);
+  }
+
+  /* ===== NAV ===== */
+  header{
+    position:sticky; top:0; z-index:100;
+    background:rgba(243,247,251,0.82);
+    backdrop-filter:blur(14px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav{display:flex;align-items:center;justify-content:space-between;height:76px;}
+  .brand{display:flex;align-items:center;gap:10px;font-family:'Plus Jakarta Sans';font-weight:800;font-size:18px;color:var(--navy);}
+  .brand-mark{
+    width:38px;height:38px;border-radius:10px;
+    background:linear-gradient(145deg,var(--navy),var(--navy-2));
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:var(--shadow-sm);
+  }
+  .nav-links{display:flex;align-items:center;gap:34px;}
+  .nav-links a{font-size:14.5px;font-weight:600;color:var(--ink);opacity:.8;transition:.2s;}
+  .nav-links a:hover{opacity:1;color:var(--teal-deep);}
+  .nav-actions{display:flex;align-items:center;gap:10px;}
+  .btn{
+    font-family:'Inter';font-weight:600;font-size:14px;
+    padding:11px 20px;border-radius:11px;border:1px solid transparent;
+    cursor:pointer;transition:.2s ease; white-space:nowrap;
+    display:inline-flex;align-items:center;gap:8px;
+  }
+  .btn-primary{background:var(--navy);color:#fff;box-shadow:var(--shadow-sm);}
+  .btn-primary:hover{background:var(--navy-2);transform:translateY(-1px);}
+  .btn-accent{background:var(--teal);color:#04241a;box-shadow:0 10px 25px -12px rgba(15,184,138,0.6);}
+  .btn-accent:hover{background:var(--teal-deep);color:#fff;transform:translateY(-1px);}
+  .btn-outline{background:transparent;border:1.5px solid var(--navy);color:var(--navy);}
+  .btn-outline:hover{background:var(--navy);color:#fff;}
+  .btn-ghost-outline{background:transparent;border:1.5px solid var(--line);color:var(--ink);}
+  .btn-ghost-outline:hover{border-color:var(--navy);}
+  .btn-sm{padding:8px 14px;font-size:13px;border-radius:9px;}
+  .hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:none;padding:6px;}
+  .hamburger span{width:22px;height:2px;background:var(--navy);border-radius:2px;}
+
+  /* ===== HERO ===== */
+  .hero{position:relative;padding:96px 0 60px;}
+  .hero-grid{display:grid;grid-template-columns:1.05fr 0.95fr;gap:56px;align-items:center;position:relative;z-index:1;}
+  .hero h1{font-size:clamp(34px,4.6vw,54px);line-height:1.08;letter-spacing:-0.02em;margin-top:18px;}
+  .hero h1 .hl{color:var(--teal-deep);}
+  .hero p.sub{font-size:17.5px;margin-top:20px;max-width:520px;}
+  .hero-ctas{display:flex;gap:14px;margin-top:32px;flex-wrap:wrap;}
+  .badges{display:flex;flex-wrap:wrap;gap:10px 22px;margin-top:36px;}
+  .badge{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:var(--navy-2);}
+  .badge .dot{width:7px;height:7px;border-radius:50%;background:var(--teal);flex:none;}
+
+  /* Passbook-style dashboard mockup */
+  .passbook{
+    position:relative;background:var(--card);border-radius:22px;
+    box-shadow:var(--shadow); border:1px solid var(--line);
+    overflow:hidden;
+  }
+  .passbook::before{
+    content:"";position:absolute;left:0;top:0;bottom:0;width:10px;
+    background:repeating-linear-gradient(180deg, var(--navy) 0 10px, transparent 10px 20px);
+    opacity:.15;
+  }
+  .pb-head{
+    background:linear-gradient(120deg,var(--navy),var(--navy-2));
+    color:#fff;padding:22px 26px;display:flex;justify-content:space-between;align-items:flex-start;
+  }
+  .pb-head .stamp{
+    font-family:'IBM Plex Mono';font-size:10.5px;letter-spacing:.08em;
+    border:1px solid rgba(255,255,255,0.5);color:#bdf5e2;
+    padding:4px 9px;border-radius:100px;text-transform:uppercase;
+  }
+  .pb-head h3{color:#fff;font-size:17px;}
+  .pb-head span{font-size:12.5px;color:#c7d5ea;font-family:'IBM Plex Mono';}
+  .pb-body{padding:22px 26px 26px;}
+  .pb-stats{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;}
+  .pb-stat{
+    background:var(--bg-2);border:1px solid var(--line);border-radius:13px;padding:14px 16px;
+  }
+  .pb-stat .label{font-size:11.5px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em;}
+  .pb-stat .value{font-family:'IBM Plex Mono';font-size:19px;font-weight:600;color:var(--navy);margin-top:6px;}
+  .pb-stat.pos .value{color:var(--teal-deep);}
+  .pb-stat.neg .value{color:#C0563F;}
+  .pb-list-title{font-size:12.5px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;}
+  .pb-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px dashed var(--line);font-size:13.5px;}
+  .pb-row:last-child{border-bottom:none;}
+  .pb-row .who{font-weight:600;color:var(--ink);}
+  .pb-row .amt{font-family:'IBM Plex Mono';font-weight:600;color:var(--teal-deep);}
+  .pb-row .tag{font-size:11px;background:var(--bg-2);color:var(--muted);padding:3px 9px;border-radius:100px;font-weight:600;}
+  .pb-foot{display:flex;justify-content:space-between;align-items:center;background:var(--bg-2);padding:12px 26px;border-top:1px solid var(--line);font-size:12px;color:var(--muted);font-family:'IBM Plex Mono';}
+
+  /* ===== PROBLEM ===== */
+  .problem{background:var(--navy);position:relative;}
+  .problem .section-head h2, .problem .section-head p{color:#fff;}
+  .problem .section-head p{color:#B9C8E0;}
+  .problem-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;}
+  .p-card{
+    background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);
+    border-radius:16px;padding:26px 22px;color:#fff;
+  }
+  .p-card .num{font-family:'IBM Plex Mono';color:#F2B27E;font-size:13px;font-weight:600;}
+  .p-card p{color:#D7E1F0;margin-top:12px;font-size:14.5px;}
+  .transition-line{
+    text-align:center;margin-top:48px;font-family:'Plus Jakarta Sans';font-weight:700;
+    font-size:22px;color:#fff;
+  }
+  .transition-line span{color:var(--teal);}
+
+  /* ===== FEATURES ===== */
+  .feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;}
+  .feat-card{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:28px 24px; transition:.25s ease; position:relative;
+  }
+  .feat-card:hover{transform:translateY(-5px);box-shadow:var(--shadow);border-color:transparent;}
+  .feat-icon{
+    width:46px;height:46px;border-radius:12px;background:var(--bg-2);
+    display:flex;align-items:center;justify-content:center;margin-bottom:16px;
+    color:var(--teal-deep);
+  }
+  .feat-card h4{font-size:16.5px;margin-bottom:9px;}
+  .feat-card p{font-size:14px;}
+  .feat-card.highlight{
+    background:linear-gradient(150deg,var(--navy),var(--navy-2));
+    border:none;color:#fff;grid-column:span 3;
+    display:flex;align-items:center;gap:26px;padding:30px 32px;
+  }
+  .feat-card.highlight .feat-icon{background:rgba(255,255,255,0.12);color:var(--gold);}
+  .feat-card.highlight h4{color:#fff;font-size:18px;}
+  .feat-card.highlight p{color:#C7D5EA;}
+  .feat-card.highlight .stamp-badge{
+    margin-left:auto;flex:none;font-family:'IBM Plex Mono';font-size:11px;
+    border:1px solid rgba(201,154,61,.6);color:var(--gold);padding:6px 12px;border-radius:100px;
+    text-transform:uppercase;letter-spacing:.06em;
+  }
+
+  /* ===== ROLES ===== */
+  .role-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-bottom:40px;}
+  .role-card{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:30px 26px; transition:.25s;
+  }
+  .role-card:hover{box-shadow:var(--shadow);transform:translateY(-4px);}
+  .role-card .role-tag{
+    font-family:'IBM Plex Mono';font-size:11.5px;color:var(--teal-deep);text-transform:uppercase;letter-spacing:.06em;font-weight:600;
+  }
+  .role-card h3{margin-top:8px;font-size:19px;}
+  .role-card ul{margin-top:18px;display:flex;flex-direction:column;gap:11px;}
+  .role-card li{font-size:14px;color:var(--ink);display:flex;gap:10px;align-items:flex-start;}
+  .role-card li::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--teal);margin-top:7px;flex:none;}
+  .role-ctas{display:flex;gap:14px;justify-content:center;}
+
+  /* ===== DASHBOARD PREVIEW ===== */
+  .dash-preview{
+    background:var(--card);border:1px solid var(--line);border-radius:24px;
+    box-shadow:var(--shadow);overflow:hidden;
+  }
+  .dash-top{
+    background:linear-gradient(120deg,var(--navy),var(--navy-2));padding:26px 32px;
+    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;
+  }
+  .dash-top h3{color:#fff;font-size:18px;}
+  .dash-top span{color:#C7D5EA;font-family:'IBM Plex Mono';font-size:12.5px;}
+  .dash-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);}
+  .dash-metric{background:var(--card);padding:22px 26px;}
+  .dash-metric .label{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em;}
+  .dash-metric .value{font-family:'IBM Plex Mono';font-size:23px;font-weight:600;color:var(--navy);margin-top:8px;}
+  .dash-metric .value.teal{color:var(--teal-deep);}
+  .dash-metric .value.warn{color:#C0563F;}
+  .dash-body{display:grid;grid-template-columns:1.2fr 1fr;gap:1px;background:var(--line);}
+  .dash-panel{background:var(--card);padding:24px 28px;}
+  .dash-panel h4{font-size:14px;text-transform:uppercase;letter-spacing:.04em;color:var(--navy);margin-bottom:16px;}
+  .bar-row{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+  .bar-row .bar-label{font-size:12.5px;width:70px;color:var(--muted);font-weight:600;flex:none;}
+  .bar-track{flex:1;height:9px;background:var(--bg-2);border-radius:100px;overflow:hidden;}
+  .bar-fill{height:100%;border-radius:100px;background:linear-gradient(90deg,var(--teal),var(--teal-deep));}
+  .bar-row .bar-val{font-family:'IBM Plex Mono';font-size:12px;color:var(--ink);width:56px;text-align:right;flex:none;}
+  .donut-wrap{display:flex;align-items:center;gap:20px;}
+  .donut{width:110px;height:110px;border-radius:50%;flex:none;
+    background:conic-gradient(var(--navy-2) 0 38%, var(--teal) 38% 63%, var(--gold) 63% 82%, #DCE6F2 82% 100%);
+    position:relative;
+  }
+  .donut::after{content:"";position:absolute;inset:16px;background:var(--card);border-radius:50%;}
+  .legend{display:flex;flex-direction:column;gap:8px;font-size:13px;}
+  .legend li{display:flex;align-items:center;gap:8px;}
+  .legend .sw{width:10px;height:10px;border-radius:3px;flex:none;}
+  .mini-list{display:flex;flex-direction:column;gap:12px;}
+  .mini-row{display:flex;justify-content:space-between;align-items:center;font-size:13.5px;padding-bottom:12px;border-bottom:1px solid var(--line);}
+  .mini-row:last-child{border:none;padding-bottom:0;}
+  .status-pill{font-size:11px;font-weight:700;padding:4px 10px;border-radius:100px;font-family:'IBM Plex Mono';}
+  .status-open{background:#FDECEA;color:#C0563F;}
+  .status-progress{background:#FFF4DE;color:#B8862B;}
+  .status-resolved{background:#E5F8F0;color:var(--teal-deep);}
+
+  /* ===== HOW IT WORKS ===== */
+  .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;position:relative;}
+  .steps::before{
+    content:"";position:absolute;top:26px;left:8%;right:8%;height:2px;
+    background:repeating-linear-gradient(90deg, var(--line) 0 10px, transparent 10px 18px);
+    z-index:0;
+  }
+  .step{position:relative;z-index:1;text-align:left;}
+  .step-num{
+    width:52px;height:52px;border-radius:50%;background:var(--card);border:2px solid var(--navy);
+    display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono';font-weight:700;
+    color:var(--navy);margin-bottom:18px;font-size:16px;
+  }
+  .step h4{font-size:16px;margin-bottom:8px;}
+  .step p{font-size:14px;}
+
+  /* ===== SECURITY ===== */
+  .sec-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;}
+  .sec-card{
+    background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px 20px;
+    display:flex;flex-direction:column;gap:12px;
+  }
+  .sec-card .feat-icon{margin-bottom:0;}
+  .sec-card h4{font-size:15px;}
+  .sec-card p{font-size:13.5px;}
+
+  /* ===== PRICING ===== */
+  .price-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;align-items:stretch;}
+  .price-card{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:32px 28px;display:flex;flex-direction:column;
+  }
+  .price-card.pop{border:2px solid var(--teal);box-shadow:var(--shadow);position:relative;transform:translateY(-10px);}
+  .price-card.pop .pop-tag{
+    position:absolute;top:-13px;left:50%;transform:translateX(-50%);
+    background:var(--teal);color:#04241a;font-size:11.5px;font-weight:700;padding:5px 14px;border-radius:100px;
+    text-transform:uppercase;letter-spacing:.04em;
+  }
+  .price-card .plan-name{font-size:12.5px;font-family:'IBM Plex Mono';color:var(--teal-deep);text-transform:uppercase;letter-spacing:.06em;font-weight:700;}
+  .price-card h3{margin-top:8px;font-size:22px;}
+  .price-card .desc{font-size:13.5px;margin-top:6px;}
+  .price-card ul{margin:24px 0;display:flex;flex-direction:column;gap:12px;flex:1;}
+  .price-card li{font-size:14px;display:flex;gap:10px;align-items:flex-start;color:var(--ink);}
+  .price-card li::before{content:"✓";color:var(--teal-deep);font-weight:700;flex:none;}
+  .price-card .btn{width:100%;justify-content:center;}
+
+  /* ===== TESTIMONIALS ===== */
+  .test-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;}
+  .test-card{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:28px 26px;
+  }
+  .test-card .quote{font-size:14.5px;color:var(--ink);line-height:1.7;}
+  .test-card .who{display:flex;align-items:center;gap:12px;margin-top:20px;}
+  .test-avatar{
+    width:42px;height:42px;border-radius:50%;background:var(--bg-2);color:var(--navy);
+    display:flex;align-items:center;justify-content:center;font-family:'Plus Jakarta Sans';font-weight:700;
+  }
+  .who-name{font-size:13.5px;font-weight:700;color:var(--navy);}
+  .who-role{font-size:12px;color:var(--muted);}
+
+  /* ===== FINAL CTA ===== */
+  .final-cta{
+    background:linear-gradient(130deg,var(--navy),var(--navy-2));
+    border-radius:26px;padding:64px 48px;text-align:center;position:relative;overflow:hidden;
+  }
+  .final-cta::before{
+    content:"";position:absolute;inset:0;
+    background:radial-gradient(500px 300px at 85% 0%, rgba(15,184,138,0.25), transparent 70%);
+  }
+  .final-cta h2{color:#fff;font-size:clamp(26px,3.4vw,36px);position:relative;}
+  .final-cta p{color:#C7D5EA;margin-top:14px;font-size:16px;max-width:560px;margin-left:auto;margin-right:auto;position:relative;}
+  .final-cta .hero-ctas{justify-content:center;position:relative;margin-top:30px;}
+
+  /* ===== FOOTER ===== */
+  footer{background:var(--navy);color:#C7D5EA;padding:64px 0 24px;}
+  .foot-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:40px;padding-bottom:40px;border-bottom:1px solid rgba(255,255,255,0.12);}
+  .foot-brand .brand{color:#fff;}
+  .foot-brand .brand-mark{box-shadow:none;}
+  .foot-brand p{margin-top:14px;font-size:13.5px;color:#9FB2CE;max-width:280px;}
+  .foot-col h5{color:#fff;font-size:13.5px;margin-bottom:16px;text-transform:uppercase;letter-spacing:.05em;}
+  .foot-col ul{display:flex;flex-direction:column;gap:11px;}
+  .foot-col a{font-size:13.5px;color:#B9C8E0;transition:.2s;}
+  .foot-col a:hover{color:var(--teal);}
+  .foot-bottom{display:flex;justify-content:space-between;align-items:center;padding-top:24px;font-size:12.5px;color:#8FA3C2;flex-wrap:wrap;gap:10px;}
+
+  /* ===== reveal on scroll ===== */
+  .reveal{opacity:0;transform:translateY(22px);transition:opacity .7s ease, transform .7s ease;}
+  .reveal.in{opacity:1;transform:translateY(0);}
+
+  @media(prefers-reduced-motion: reduce){
+    .reveal{transition:none;opacity:1;transform:none;}
+    html{scroll-behavior:auto;}
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media(max-width:1024px){
+    .hero-grid{grid-template-columns:1fr;}
+    .problem-grid{grid-template-columns:repeat(2,1fr);}
+    .feat-grid{grid-template-columns:repeat(2,1fr);}
+    .feat-card.highlight{grid-column:span 2;}
+    .role-grid{grid-template-columns:1fr;}
+    .dash-metrics{grid-template-columns:repeat(2,1fr);}
+    .dash-body{grid-template-columns:1fr;}
+    .steps{grid-template-columns:repeat(2,1fr);row-gap:36px;}
+    .steps::before{display:none;}
+    .sec-grid{grid-template-columns:repeat(2,1fr);}
+    .price-grid{grid-template-columns:1fr;}
+    .price-card.pop{transform:none;}
+    .test-grid{grid-template-columns:1fr;}
+    .foot-grid{grid-template-columns:1fr 1fr;}
+  }
+  @media(max-width:960px){
+    .nav-links{display:none;}
+    .nav-actions .btn-outline,
+    .nav-actions .btn-primary,
+    .nav-actions .btn-accent{display:none;}
+    .hamburger{display:flex;}
+  }
+  @media(max-width:720px){
+    .nav-links{display:none;}
+    .nav-actions .btn-outline,
+    .nav-actions .btn-primary,
+    .nav-actions .btn-accent{display:none;}
+    .hamburger{display:flex;}
+    .section{padding:76px 0;}
+    .problem-grid{grid-template-columns:1fr;}
+    .feat-grid{grid-template-columns:1fr;}
+    .feat-card.highlight{grid-column:span 1;flex-direction:column;align-items:flex-start;}
+    .feat-card.highlight .stamp-badge{margin-left:0;}
+    .dash-metrics{grid-template-columns:1fr 1fr;}
+    .steps{grid-template-columns:1fr;}
+    .sec-grid{grid-template-columns:1fr;}
+    .foot-grid{grid-template-columns:1fr;}
+    .foot-bottom{flex-direction:column;align-items:flex-start;}
+    .hero-ctas,.role-ctas{flex-direction:column;align-items:stretch;}
+    .final-cta{padding:48px 24px;}
+  }
+  @media(max-width:400px){
+    .dash-metrics{grid-template-columns:1fr;}
+    .dash-metric{padding:16px 20px;}
+    .dash-metric .value{font-size:20px;}
+    .pb-stats{grid-template-columns:1fr;}
+    .bar-row .bar-label{width:56px;font-size:11.5px;}
+    .bar-row .bar-val{width:40px;font-size:11px;}
+    .mini-row{flex-wrap:wrap;row-gap:4px;}
+    .mini-row > span:last-child{font-size:11px;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <div class="brand">
+      <span class="brand-mark">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 21V9.5L12 4l8 5.5V21H4Z" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 21v-6h6v6" stroke="#0FB88A" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      </span>
+      Housing Society Management
+    </div>
+    <nav class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#how-it-works">How It Works</a>
+      <a href="#dashboard">Dashboard</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#contact">Contact</a>
+    </nav>
+    <div class="nav-actions">
+      <a class="btn btn-outline btn-sm" href="Auth.html?role=resident">Resident Login</a>
+      <a class="btn btn-primary btn-sm" href="Auth.html?role=admin">Admin Login</a>
+      <a class="btn btn-accent btn-sm" href="#demo">Get Demo</a>
+      <button class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</header>
+
+<!-- ===== MOBILE MENU ===== -->
+<div id="mobileMenu" style="display:none;background:#fff;border-bottom:1px solid var(--line);">
+  <div class="wrap" style="padding:20px 28px;display:flex;flex-direction:column;gap:16px;">
+    <a href="#features">Features</a>
+    <a href="#how-it-works">How It Works</a>
+    <a href="#dashboard">Dashboard</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#contact">Contact</a>
+    <a class="btn btn-outline" href="Auth.html?role=resident">Resident Login</a>
+    <a class="btn btn-primary" href="Auth.html?role=admin">Admin Login</a>
+    <a class="btn btn-accent" href="#demo">Get Demo</a>
+  </div>
+</div>
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+  <div class="blueprint"></div>
+  <div class="wrap hero-grid">
+    <div class="reveal in">
+      <span class="eyebrow">Built for RWAs &amp; Apartment Societies</span>
+      <h1>Simplify Society Maintenance, <span class="hl">Payments &amp; Transparency</span></h1>
+      <p class="sub">Manage maintenance bills, online payments, expenses, complaints, notices, reports, and member communication from one secure dashboard.</p>
+      <div class="hero-ctas">
+        <a href="Auth.html" class="btn btn-accent">Get Started</a>
+        <a href="#dashboard" class="btn btn-ghost-outline">View Demo Dashboard</a>
+      </div>
+      <div class="badges">
+        <div class="badge"><span class="dot"></span>Secure Role-Based Access</div>
+        <div class="badge"><span class="dot"></span>Digital Receipts</div>
+        <div class="badge"><span class="dot"></span>Transparent Expense Reports</div>
+        <div class="badge"><span class="dot"></span>Audit-Ready Records</div>
+      </div>
+    </div>
+
+    <div class="passbook reveal in">
+      <div class="pb-head">
+        <div>
+          <h3>Sunrise Heights CHS</h3>
+          <span>Society Ledger · FY 2026-27</span>
+        </div>
+        <span class="stamp">Live</span>
+      </div>
+      <div class="pb-body">
+        <div class="pb-stats">
+          <div class="pb-stat pos"><div class="label">Total Collected</div><div class="value mono" data-count="1250000">₹0</div></div>
+          <div class="pb-stat neg"><div class="label">Pending Maintenance</div><div class="value mono" data-count="84500">₹0</div></div>
+          <div class="pb-stat"><div class="label">Monthly Expenses</div><div class="value mono" data-count="312400">₹0</div></div>
+          <div class="pb-stat pos"><div class="label">Current Balance</div><div class="value mono" data-count="937600">₹0</div></div>
+        </div>
+        <div class="pb-list-title">Recent Payments</div>
+        <div class="pb-row"><span class="who">A-402 · R. Sharma</span><span class="amt">+ ₹4,500</span></div>
+        <div class="pb-row"><span class="who">B-108 · Kavita Iyer</span><span class="amt">+ ₹4,500</span></div>
+        <div class="pb-row"><span class="who">C-215 · Manoj Deshpande</span><span class="amt">+ ₹6,200</span></div>
+      </div>
+      <div class="pb-foot">
+        <span>3 Open Complaints</span>
+        <span>2 Notices Published</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PROBLEM ===== -->
+<section class="section problem">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow" style="background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.2);color:#8fd8bd;">The Old Way</span>
+      <h2>Society Management Should Not Depend on Excel, WhatsApp &amp; Manual Follow-ups</h2>
+    </div>
+    <div class="problem-grid">
+      <div class="p-card reveal"><div class="num">01</div><p>Manual maintenance collection creates confusion over who has paid and who hasn't.</p></div>
+      <div class="p-card reveal"><div class="num">02</div><p>Residents do not know where society money is spent, leading to distrust.</p></div>
+      <div class="p-card reveal"><div class="num">03</div><p>Complaints get lost in WhatsApp groups with no tracking or accountability.</p></div>
+      <div class="p-card reveal"><div class="num">04</div><p>Treasurers struggle with reports, receipts, and pending dues every single month.</p></div>
+    </div>
+    <div class="transition-line reveal">Housing Society Management brings everything into <span>one organized platform.</span></div>
+  </div>
+</section>
+
+<!-- ===== FEATURES ===== -->
+<section class="section" id="features">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Core Features</span>
+      <h2>Everything Your Society Needs, Built In</h2>
+      <p>From billing to complaints, every workflow your committee already runs — organized, tracked, and transparent.</p>
+    </div>
+    <div class="feat-grid">
+      <div class="feat-card reveal">
+        <div class="feat-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="8" r="3.2"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"/></svg></div>
+        <h4>User &amp; Access Management</h4>
+        <p>Admin can create, edit, deactivate, and manage house owner accounts with secure role-based access for Super Admin, Committee/Treasurer, and House Owner.</p>
+      </div>
+      <div class="feat-card reveal">
+        <div class="feat-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h8M8 13h5"/></svg></div>
+        <h4>Maintenance Billing</h4>
+        <p>Auto-generate monthly or quarterly maintenance bills with configurable rules — flat rate, per sq. ft., or slab-based billing.</p>
+      </div>
+      <div class="feat-card reveal">
+        <div class="feat-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 10h18M6 15h4"/><rect x="3" y="6" width="18" height="13" rx="2"/></svg></div>
+        <h4>Online Payments</h4>
+        <p>Residents can pay maintenance using UPI, card, net banking, or bank transfer, with automatic digital receipts generated after payment.</p>
+      </div>
+      <div class="feat-card reveal">
+        <div class="feat-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 6h16M4 12h16M4 18h10"/></svg></div>
+        <h4>Manual Payment Entry</h4>
+        <p>Committee members can record cash, cheque, or bank transfer payments manually with full receipt tracking.</p>
+      </div>
+      <div class="feat-card reveal">
+        <div class="feat-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 20V10M11 20V4M18 20v-7"/></svg></div>
+        <h4>Expense Tracking</h4>
+        <p>Log society expenses by category, upload invoices, manage vendor payments, and maintain clean financial records.</p>
+      </div>
+      <div class="feat-card reveal">
+        <div class="feat-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 19V5M4 19h16M8 15l3-4 3 3 4-6"/></svg></div>
+        <h4>Financial Dashboard &amp; Reports</h4>
+        <p>View total collected, pending dues, expenses, current balance, monthly trends, and export reports in PDF or Excel.</p>
+      </div>
+      <div class="feat-card reveal">
+        <div class="feat-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 4v16M4 12h16" opacity="0"/><circle cx="12" cy="12" r="8"/><path d="M9 12l2 2 4-4"/></svg></div>
+        <h4>Member Transparency View</h4>
+        <p>Residents get read-only access to their own payment history, pending dues, expense summary, and the society balance overview.</p>
+      </div>
+      <div class="feat-card reveal">
+        <div class="feat-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 4h16v11H8l-4 4V4Z"/></svg></div>
+        <h4>Complaints / Ticket System</h4>
+        <p>Residents can raise complaints with photos and track status as Open, In Progress, or Resolved.</p>
+      </div>
+      <div class="feat-card reveal">
+        <div class="feat-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 3v18M6 3l12 4-12 4"/></svg></div>
+        <h4>Notices &amp; Announcements</h4>
+        <p>Admins can publish important society notices, meeting updates, payment reminders, and announcements for all members.</p>
+      </div>
+      <div class="feat-card reveal">
+        <div class="feat-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 21V10M12 21V3M20 21v-7"/></svg></div>
+        <h4>Polls &amp; Voting</h4>
+        <p>Conduct society polls for AGM decisions, maintenance approvals, events, or day-to-day community voting.</p>
+      </div>
+      <div class="feat-card highlight reveal">
+        <div class="feat-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></div>
+        <div>
+          <h4>Audit Log</h4>
+          <p>Every edit, payment update, bill change, expense modification, and admin action is tracked with user name, date, time, old value, and new value.</p>
+        </div>
+        <span class="stamp-badge">Tamper-evident</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== ROLES ===== -->
+<section class="section" style="background:var(--bg-2);">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Role-Based Access</span>
+      <h2>One Platform, Different Views for Every Role</h2>
+    </div>
+    <div class="role-grid">
+      <div class="role-card reveal">
+        <span class="role-tag">Super Admin</span>
+        <h3>Full Society Control</h3>
+        <ul>
+          <li>Manage society settings</li>
+          <li>Create committee/admin users</li>
+          <li>View all financial records</li>
+          <li>Access audit logs</li>
+          <li>Manage billing rules</li>
+        </ul>
+      </div>
+      <div class="role-card reveal">
+        <span class="role-tag">Committee / Treasurer</span>
+        <h3>Day-to-Day Operations</h3>
+        <ul>
+          <li>Generate bills</li>
+          <li>Track payments</li>
+          <li>Add expenses</li>
+          <li>Upload receipts</li>
+          <li>Export reports</li>
+        </ul>
+      </div>
+      <div class="role-card reveal">
+        <span class="role-tag">House Owner / Resident</span>
+        <h3>Personal Transparency</h3>
+        <ul>
+          <li>View personal bills</li>
+          <li>Pay maintenance</li>
+          <li>Download receipts</li>
+          <li>Raise complaints</li>
+          <li>Read notices and announcements</li>
+        </ul>
+      </div>
+    </div>
+    <div class="role-ctas reveal">
+      <a id="admin-login" href="Auth.html?role=admin" class="btn btn-primary">Login as Admin</a>
+      <a id="resident-login" href="Auth.html?role=resident" class="btn btn-outline">Login as Resident</a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== DASHBOARD PREVIEW ===== -->
+<section class="section" id="dashboard">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Live Preview</span>
+      <h2>Real-Time Financial Clarity for Your Society</h2>
+      <p>See exactly what committee members and residents see — collected amounts, dues, expenses, and balance, always up to date.</p>
+    </div>
+    <div class="dash-preview reveal">
+      <div class="dash-top">
+        <h3>Sunrise Heights CHS — Financial Overview</h3>
+        <span>Updated moments ago · Q1 FY 2026-27</span>
+      </div>
+      <div class="dash-metrics">
+        <div class="dash-metric"><div class="label">Total Maintenance Collected</div><div class="value teal mono">₹12,50,000</div></div>
+        <div class="dash-metric"><div class="label">Pending Dues</div><div class="value warn mono">₹84,500</div></div>
+        <div class="dash-metric"><div class="label">Monthly Expenses</div><div class="value mono">₹3,12,400</div></div>
+        <div class="dash-metric"><div class="label">Available Balance</div><div class="value teal mono">₹9,37,600</div></div>
+      </div>
+      <div class="dash-body">
+        <div class="dash-panel">
+          <h4>Payment Status by Wing</h4>
+          <div class="bar-row"><span class="bar-label">Wing A</span><div class="bar-track"><div class="bar-fill" style="width:92%;"></div></div><span class="bar-val">92%</span></div>
+          <div class="bar-row"><span class="bar-label">Wing B</span><div class="bar-track"><div class="bar-fill" style="width:78%;"></div></div><span class="bar-val">78%</span></div>
+          <div class="bar-row"><span class="bar-label">Wing C</span><div class="bar-track"><div class="bar-fill" style="width:85%;"></div></div><span class="bar-val">85%</span></div>
+          <div class="bar-row"><span class="bar-label">Wing D</span><div class="bar-track"><div class="bar-fill" style="width:63%;"></div></div><span class="bar-val">63%</span></div>
+
+          <h4 style="margin-top:24px;">Recent Audit Activity</h4>
+          <div class="mini-list">
+            <div class="mini-row"><span>Bill amount updated · Flat B-108</span><span class="mono" style="color:var(--muted);font-size:12px;">Today, 10:42</span></div>
+            <div class="mini-row"><span>Expense added · Lift AMC vendor</span><span class="mono" style="color:var(--muted);font-size:12px;">Today, 09:15</span></div>
+            <div class="mini-row"><span>New committee member added</span><span class="mono" style="color:var(--muted);font-size:12px;">Yesterday</span></div>
+          </div>
+        </div>
+        <div class="dash-panel">
+          <h4>Expense Category Split</h4>
+          <div class="donut-wrap">
+            <div class="donut"></div>
+            <ul class="legend">
+              <li><span class="sw" style="background:var(--navy-2);"></span>Housekeeping — 38%</li>
+              <li><span class="sw" style="background:var(--teal);"></span>Security — 25%</li>
+              <li><span class="sw" style="background:var(--gold);"></span>Repairs &amp; AMC — 19%</li>
+              <li><span class="sw" style="background:#DCE6F2;"></span>Utilities &amp; Other — 18%</li>
+            </ul>
+          </div>
+          <h4 style="margin-top:24px;">Latest Complaints</h4>
+          <div class="mini-list">
+            <div class="mini-row"><span>Lift not working — Wing C</span><span class="status-pill status-open">Open</span></div>
+            <div class="mini-row"><span>Water leakage — Flat A-205</span><span class="status-pill status-progress">In Progress</span></div>
+            <div class="mini-row"><span>Parking dispute — Wing B</span><span class="status-pill status-resolved">Resolved</span></div>
+          </div>
+          <h4 style="margin-top:24px;">Recent Notices</h4>
+          <div class="mini-list">
+            <div class="mini-row"><span>AGM scheduled for 28th July</span><span class="mono" style="color:var(--muted);font-size:12px;">New</span></div>
+            <div class="mini-row"><span>Water tank cleaning this weekend</span><span class="mono" style="color:var(--muted);font-size:12px;">2d ago</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== HOW IT WORKS ===== -->
+<section class="section" id="how-it-works" style="background:var(--bg-2);">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">How It Works</span>
+      <h2>Set Up Once, Run Every Month on Autopilot</h2>
+    </div>
+    <div class="steps">
+      <div class="step reveal">
+        <div class="step-num">01</div>
+        <h4>Add Society &amp; Flats</h4>
+        <p>Admin adds flat details, owner details, billing type, and roles.</p>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">02</div>
+        <h4>Generate Maintenance Bills</h4>
+        <p>The system creates monthly or quarterly bills automatically.</p>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">03</div>
+        <h4>Collect Payments</h4>
+        <p>Residents pay online, or admins record offline payments.</p>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">04</div>
+        <h4>Track Reports &amp; Transparency</h4>
+        <p>Committee views reports; residents view payment history and expense summary.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECURITY ===== -->
+<section class="section">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Security &amp; Trust</span>
+      <h2>Built for Secure and Transparent Society Operations</h2>
+    </div>
+    <div class="sec-grid">
+      <div class="sec-card reveal"><div class="feat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7l8-4Z"/></svg></div><h4>Secure Login</h4><p>Encrypted authentication for every account.</p></div>
+      <div class="sec-card reveal"><div class="feat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div><h4>Role-Based Access</h4><p>Every user sees only what their role permits.</p></div>
+      <div class="sec-card reveal"><div class="feat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></div><h4>Payment Receipt Tracking</h4><p>Every payment generates a traceable digital record.</p></div>
+      <div class="sec-card reveal"><div class="feat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 19V5M4 19h16M8 15l3-4 3 3 4-6"/></svg></div><h4>Audit Logs for Every Edit</h4><p>Full history of who changed what, and when.</p></div>
+      <div class="sec-card reveal"><div class="feat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7l8-4Z"/><path d="M9 12l2 2 4-4"/></svg></div><h4>Data Privacy Focused</h4><p>Resident and financial data handled with care.</p></div>
+      <div class="sec-card reveal"><div class="feat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 18a4 4 0 0 1 0-8 5 5 0 0 1 9.6-1.5A4.5 4.5 0 0 1 18 18H6Z"/></svg></div><h4>Cloud-Based Access</h4><p>Reach your dashboard from anywhere, anytime.</p></div>
+      <div class="sec-card reveal"><div class="feat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M7 3v18M17 3v18M3 8h18M3 16h18"/></svg></div><h4>Exportable Financial Reports</h4><p>Download clean PDF or Excel reports anytime.</p></div>
+      <div class="sec-card reveal"><div class="feat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="8" r="3.2"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"/></svg></div><h4>Admin-Controlled Permissions</h4><p>Grant and revoke access with full control.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PRICING ===== -->
+<section class="section" id="pricing" style="background:var(--bg-2);">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">Pricing</span>
+      <h2>Plans for Every Size of Society</h2>
+      <p>Simple, transparent pricing — pay for what your society needs.</p>
+    </div>
+    <div class="price-grid">
+      <div class="price-card reveal">
+        <span class="plan-name">Starter</span>
+        <h3>₹999<span style="font-size:14px;color:var(--muted);font-weight:500;">/month</span></h3>
+        <p class="desc">For small societies</p>
+        <ul>
+          <li>Up to 50 flats</li>
+          <li>Maintenance billing</li>
+          <li>Manual payment tracking</li>
+          <li>Expense tracking</li>
+          <li>Notices</li>
+        </ul>
+        <a href="#" class="btn btn-outline">Start Free</a>
+      </div>
+      <div class="price-card pop reveal">
+        <span class="pop-tag">Most Popular</span>
+        <span class="plan-name">Growth</span>
+        <h3>₹2,499<span style="font-size:14px;color:var(--muted);font-weight:500;">/month</span></h3>
+        <p class="desc">For medium societies</p>
+        <ul>
+          <li>Up to 200 flats</li>
+          <li>Online payments</li>
+          <li>Complaints</li>
+          <li>PDF/Excel reports</li>
+          <li>Resident login</li>
+        </ul>
+        <a href="dashboard.html" class="btn btn-accent">Get Started</a>
+      </div>
+      <div class="price-card reveal">
+        <span class="plan-name">Premium</span>
+        <h3>Custom</h3>
+        <p class="desc">For large societies</p>
+        <ul>
+          <li>Unlimited flats</li>
+          <li>Advanced reports</li>
+          <li>Audit logs</li>
+          <li>Polls/voting</li>
+          <li>Priority support</li>
+        </ul>
+        <a href="#" class="btn btn-primary">Contact Sales</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== TESTIMONIALS ===== -->
+<section class="section">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow">From Real Committees</span>
+      <h2>Trusted by Treasurers, Committees &amp; Residents</h2>
+    </div>
+    <div class="test-grid">
+      <div class="test-card reveal">
+        <p class="quote">"Closing the monthly books used to take me a full weekend. Now bills, receipts, and expenses stay organised on their own — I just review and approve."</p>
+        <div class="who"><div class="test-avatar">RS</div><div><div class="who-name">Rajesh Sane</div><div class="who-role">Society Treasurer</div></div></div>
+      </div>
+      <div class="test-card reveal">
+        <p class="quote">"Residents used to question every rupee we spent. Now the expense dashboard is public to everyone, and those conversations have simply stopped."</p>
+        <div class="who"><div class="test-avatar">KI</div><div><div class="who-name">Kavita Iyer</div><div class="who-role">Committee Member</div></div></div>
+      </div>
+      <div class="test-card reveal">
+        <p class="quote">"I raised a complaint about a lift issue and could actually track it, instead of it disappearing into a WhatsApp group. It got resolved in two days."</p>
+        <div class="who"><div class="test-avatar">MD</div><div><div class="who-name">Manoj Deshpande</div><div class="who-role">Resident</div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FINAL CTA ===== -->
+<section class="section" id="demo">
+  <div class="wrap">
+    <div class="final-cta reveal">
+      <h2>Ready to Make Your Society More Transparent and Organized?</h2>
+      <p>Start managing bills, payments, expenses, complaints, and reports from one simple platform.</p>
+      <div class="hero-ctas">
+        <a href="#contact" class="btn btn-accent">Book a Free Demo</a>
+        <a href="#admin-login" class="btn btn-ghost-outline" style="border-color:rgba(255,255,255,0.4);color:#fff;">Login to Dashboard</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer id="contact">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <div class="brand">
+          <span class="brand-mark">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 21V9.5L12 4l8 5.5V21H4Z" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 21v-6h6v6" stroke="#0FB88A" stroke-width="1.6" stroke-linejoin="round"/></svg>
+          </span>
+          Housing Society Management
+        </div>
+        <p>A finance-first platform for housing societies — transparent billing, easy payments, and clear communication for every resident.</p>
+      </div>
+      <div class="foot-col">
+        <h5>Product</h5>
+        <ul>
+          <li><a href="#features">Features</a></li>
+          <li><a href="#pricing">Pricing</a></li>
+          <li><a href="#demo">Demo</a></li>
+          <li><a href="#admin-login">Login</a></li>
+        </ul>
+      </div>
+      <div class="foot-col">
+        <h5>Company</h5>
+        <ul>
+          <li><a href="#">About</a></li>
+          <li><a href="#contact">Contact</a></li>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Terms</a></li>
+        </ul>
+      </div>
+      <div class="foot-col">
+        <h5>Contact</h5>
+        <ul>
+          <li><a href="mailto:hello@housingsociety.app">hello@housingsociety.app</a></li>
+          <li><a href="#">+91 98XXX XXXXX</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 Housing Society Management. All rights reserved.</span>
+      <span>Made for transparent communities across India.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Mobile menu toggle
+  const hamburger = document.getElementById('hamburger');
+  const mobileMenu = document.getElementById('mobileMenu');
+  hamburger.addEventListener('click', () => {
+    mobileMenu.style.display = mobileMenu.style.display === 'block' ? 'none' : 'block';
+  });
+  mobileMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', () => mobileMenu.style.display = 'none'));
+
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, { threshold: 0.12 });
+  reveals.forEach(el => io.observe(el));
+
+  // Currency formatter (Indian numbering)
+  function formatINR(n){
+    return '₹' + Math.round(n).toLocaleString('en-IN');
+  }
+
+  // Animate counters in hero passbook
+  const counters = document.querySelectorAll('[data-count]');
+  const counterIO = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const el = entry.target;
+        const target = parseInt(el.getAttribute('data-count'), 10);
+        const duration = 1200;
+        const start = performance.now();
+        function tick(now){
+          const progress = Math.min((now - start) / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          el.textContent = formatINR(target * eased);
+          if (progress < 1) requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+        counterIO.unobserve(el);
+      }
+    });
+  }, { threshold: 0.4 });
+  counters.forEach(el => counterIO.observe(el));
+</script>
+
+</body>
+</html>

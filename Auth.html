@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login / Sign Up — Housing Society Management</title>
+<meta name="description" content="Secure role-based login and sign up for residents, committee members, and admins on Housing Society Management.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0A2647;
+    --navy-2:#123A6B;
+    --ink:#0B1F3A;
+    --teal:#0FB88A;
+    --teal-deep:#0A9B74;
+    --gold:#C99A3D;
+    --bg:#F3F7FB;
+    --bg-2:#EAF2F8;
+    --card:#FFFFFF;
+    --line:#E1E8F0;
+    --muted:#5B6B85;
+    --danger:#C0563F;
+    --radius:18px;
+    --shadow: 0 20px 45px -25px rgba(10,38,71,0.35);
+    --shadow-sm: 0 10px 25px -15px rgba(10,38,71,0.25);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    min-height:100vh;
+    font-family:'Inter',sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(1200px 600px at 85% -10%, rgba(15,184,138,0.08), transparent 60%),
+      radial-gradient(900px 500px at -10% 10%, rgba(18,58,107,0.07), transparent 60%),
+      var(--bg);
+    overflow-x:hidden;
+  }
+  h1,h2,h3,h4{font-family:'Plus Jakarta Sans',sans-serif; margin:0; color:var(--navy);}
+  p{margin:0; color:var(--muted); line-height:1.65;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  a{text-decoration:none;color:inherit;}
+  ul{margin:0;padding:0;list-style:none;}
+  img,svg{display:block;}
+  button{font-family:inherit;}
+
+  /* ===== top bar ===== */
+  .topbar{
+    position:sticky;top:0;z-index:50;
+    background:rgba(243,247,251,0.82);
+    backdrop-filter:blur(14px);
+    border-bottom:1px solid var(--line);
+  }
+  .topbar-in{
+    max-width:1200px;margin:0 auto;padding:0 28px;height:76px;
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  .brand{display:flex;align-items:center;gap:10px;font-family:'Plus Jakarta Sans';font-weight:800;font-size:18px;color:var(--navy);}
+  .brand-mark{
+    width:38px;height:38px;border-radius:10px;flex:none;
+    background:linear-gradient(145deg,var(--navy),var(--navy-2));
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:var(--shadow-sm);
+  }
+  .back-link{
+    display:flex;align-items:center;gap:7px;font-size:14px;font-weight:600;color:var(--navy-2);
+  }
+  .back-link svg{width:16px;height:16px;}
+
+  /* ===== layout ===== */
+  .auth-shell{
+    max-width:1200px;margin:0 auto;padding:56px 28px 80px;
+    display:grid;grid-template-columns:0.95fr 1.05fr;gap:0;
+    align-items:stretch;
+  }
+  .auth-panel{
+    position:relative;overflow:hidden;
+    background:linear-gradient(150deg,var(--navy),var(--navy-2));
+    border-radius:26px 0 0 26px;
+    padding:52px 46px;
+    display:flex;flex-direction:column;
+    color:#fff;
+  }
+  .blueprint{
+    position:absolute; inset:0; z-index:0; opacity:.5;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px);
+    background-size: 40px 40px;
+    -webkit-mask-image: radial-gradient(ellipse 70% 60% at 30% 20%, black 10%, transparent 75%);
+    mask-image: radial-gradient(ellipse 70% 60% at 30% 20%, black 10%, transparent 75%);
+  }
+  .auth-panel > *{position:relative;z-index:1;}
+  .auth-panel .brand{color:#fff;margin-bottom:44px;}
+  .auth-panel h2{color:#fff;font-size:clamp(24px,2.6vw,30px);line-height:1.25;letter-spacing:-0.01em;max-width:360px;}
+  .auth-panel .sub{color:#C7D5EA;margin-top:14px;font-size:14.5px;max-width:340px;}
+
+  .badges{display:flex;flex-direction:column;gap:14px;margin-top:38px;}
+  .badge{display:flex;align-items:center;gap:10px;font-size:13.5px;font-weight:600;color:#EAF2F8;}
+  .badge .ico{
+    width:30px;height:30px;border-radius:9px;background:rgba(255,255,255,0.1);
+    display:flex;align-items:center;justify-content:center;flex:none;color:var(--teal);
+  }
+
+  /* mini passbook stub reused motif */
+  .mini-pb{
+    margin-top:auto;padding-top:36px;
+  }
+  .mini-pb-card{
+    background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.16);
+    border-radius:16px;padding:20px 22px;backdrop-filter:blur(6px);
+  }
+  .mini-pb-card .stamp{
+    font-family:'IBM Plex Mono';font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+    border:1px solid rgba(255,255,255,0.4);color:#bdf5e2;padding:3px 9px;border-radius:100px;
+    display:inline-block;margin-bottom:12px;
+  }
+  .mini-pb-row{display:flex;justify-content:space-between;font-size:13px;padding:7px 0;border-bottom:1px dashed rgba(255,255,255,0.18);}
+  .mini-pb-row:last-child{border-bottom:none;}
+  .mini-pb-row .who{color:#EAF2F8;font-weight:600;}
+  .mini-pb-row .amt{font-family:'IBM Plex Mono';color:var(--teal);font-weight:600;}
+
+  /* ===== FORM CARD ===== */
+  .form-card{
+    background:var(--card);border:1px solid var(--line);
+    border-radius:0 26px 26px 0;
+    box-shadow:var(--shadow);
+    padding:52px 52px 44px;
+    display:flex;flex-direction:column;
+  }
+
+  /* tabs: login / signup */
+  .tabs{
+    display:grid;grid-template-columns:1fr 1fr;
+    background:var(--bg-2);border:1px solid var(--line);border-radius:13px;padding:5px;
+    margin-bottom:30px;position:relative;
+  }
+  .tab-btn{
+    border:none;background:transparent;padding:11px 10px;border-radius:9px;
+    font-size:14.5px;font-weight:700;color:var(--muted);cursor:pointer;
+    position:relative;z-index:1;transition:color .25s ease;
+  }
+  .tab-btn.active{color:var(--navy);}
+  .tab-indicator{
+    position:absolute;top:5px;left:5px;
+    width:calc(50% - 5px);height:calc(100% - 10px);
+    background:#fff;border-radius:9px;box-shadow:var(--shadow-sm);
+    transition:transform .3s cubic-bezier(.4,0,.2,1);
+  }
+  .tabs[data-active="signup"] .tab-indicator{transform:translateX(100%);}
+
+  /* role segmented control */
+  .role-toggle{
+    display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:26px;
+  }
+  .role-btn{
+    border:1.5px solid var(--line);background:var(--card);border-radius:12px;
+    padding:12px 14px;cursor:pointer;text-align:left;transition:.2s ease;
+  }
+  .role-btn.active{border-color:var(--teal);background:rgba(15,184,138,0.06);box-shadow:0 0 0 3px rgba(15,184,138,0.12);}
+  .role-btn .r-title{font-size:13.5px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:8px;}
+  .role-btn .r-title svg{width:16px;height:16px;color:var(--teal-deep);flex:none;}
+  .role-btn .r-sub{font-size:11.5px;color:var(--muted);margin-top:3px;}
+
+  .form-head h1{font-size:24px;letter-spacing:-0.01em;}
+  .form-head p{margin-top:8px;font-size:14px;}
+
+  .form{display:flex;flex-direction:column;gap:16px;margin-top:26px;}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .field{display:flex;flex-direction:column;gap:7px;}
+  .field label{font-size:13px;font-weight:600;color:var(--navy);}
+  .input-wrap{position:relative;display:flex;align-items:center;}
+  .input-wrap svg.leading{position:absolute;left:14px;width:17px;height:17px;color:var(--muted);pointer-events:none;}
+  .field input, .field select{
+    width:100%;padding:12.5px 14px 12.5px 40px;border:1.5px solid var(--line);border-radius:11px;
+    font-size:14.5px;font-family:'Inter';color:var(--ink);background:var(--bg);
+    transition:border-color .2s, box-shadow .2s;
+  }
+  .field input:focus, .field select:focus{
+    outline:none;border-color:var(--teal);box-shadow:0 0 0 3.5px rgba(15,184,138,0.14);background:#fff;
+  }
+  .field input.err{border-color:var(--danger);}
+  .field .err-msg{font-size:12px;color:var(--danger);display:none;}
+  .field.invalid .err-msg{display:block;}
+  .toggle-eye{
+    position:absolute;right:12px;background:none;border:none;cursor:pointer;
+    color:var(--muted);display:flex;padding:4px;
+  }
+  .toggle-eye:hover{color:var(--navy);}
+
+  .row-between{display:flex;align-items:center;justify-content:space-between;font-size:13.5px;margin-top:-4px;}
+  .checkline{display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--ink);}
+  .checkline input{width:16px;height:16px;accent-color:var(--teal-deep);}
+  .link-teal{color:var(--teal-deep);font-weight:600;}
+  .link-teal:hover{text-decoration:underline;}
+
+  .btn{
+    font-family:'Inter';font-weight:700;font-size:15px;
+    padding:13.5px 20px;border-radius:11px;border:none;
+    cursor:pointer;transition:.2s ease;
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  }
+  .btn-accent{background:var(--teal);color:#04241a;box-shadow:0 10px 25px -12px rgba(15,184,138,0.6);}
+  .btn-accent:hover{background:var(--teal-deep);color:#fff;transform:translateY(-1px);}
+  .btn-block{width:100%;margin-top:6px;}
+
+  .divider{display:flex;align-items:center;gap:14px;margin:22px 0;color:var(--muted);font-size:12.5px;}
+  .divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--line);}
+
+  .oauth-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .oauth-btn{
+    display:flex;align-items:center;justify-content:center;gap:9px;
+    border:1.5px solid var(--line);background:#fff;border-radius:11px;padding:11px;
+    font-size:13.5px;font-weight:600;color:var(--ink);cursor:pointer;transition:.2s;
+  }
+  .oauth-btn:hover{border-color:var(--navy-2);}
+
+  .switch-line{text-align:center;margin-top:26px;font-size:14px;color:var(--muted);}
+
+  .success-box{
+    display:none;text-align:center;padding:30px 10px;
+  }
+  .success-box.show{display:block;}
+  .success-icon{
+    width:60px;height:60px;border-radius:50%;background:rgba(15,184,138,0.12);
+    display:flex;align-items:center;justify-content:center;margin:0 auto 18px;color:var(--teal-deep);
+  }
+  .success-box h3{font-size:19px;}
+  .success-box p{margin-top:8px;font-size:14px;}
+
+  /* ===== RESPONSIVE ===== */
+  @media(max-width:980px){
+    .auth-shell{grid-template-columns:1fr;padding:32px 20px 60px;gap:0;}
+    .auth-panel{
+      border-radius:22px 22px 0 0;padding:36px 30px;
+    }
+    .form-card{border-radius:0 0 22px 22px;padding:36px 26px 34px;}
+    .mini-pb{margin-top:28px;padding-top:0;}
+    .auth-panel h2{max-width:100%;}
+    .auth-panel .sub{max-width:100%;}
+    .badges{flex-direction:row;flex-wrap:wrap;gap:16px 22px;margin-top:22px;}
+  }
+  @media(max-width:560px){
+    .topbar-in{height:68px;padding:0 18px;}
+    .back-link span{display:none;}
+    .auth-shell{padding:24px 14px 48px;}
+    .auth-panel{padding:28px 22px;}
+    .auth-panel h2{font-size:22px;}
+    .badges{display:none;}
+    .form-card{padding:28px 18px 30px;}
+    .form-row{grid-template-columns:1fr;}
+    .role-toggle{grid-template-columns:1fr 1fr;gap:8px;}
+    .role-btn{padding:10px 11px;}
+    .role-btn .r-sub{display:none;}
+    .oauth-row{grid-template-columns:1fr;}
+  }
+  @media(max-width:360px){
+    .tab-btn{font-size:13px;padding:10px 6px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-in">
+    <div class="brand">
+      <span class="brand-mark">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 21V9.5L12 4l8 5.5V21H4Z" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 21v-6h6v6" stroke="#0FB88A" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      </span>
+      Housing Society Management
+    </div>
+    <a class="back-link" href="index.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+      <span>Back to Home</span>
+    </a>
+  </div>
+</div>
+
+<div class="auth-shell">
+  <!-- LEFT BRAND PANEL -->
+  <div class="auth-panel">
+    <div class="blueprint"></div>
+    <div class="brand">
+      <span class="brand-mark">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 21V9.5L12 4l8 5.5V21H4Z" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 21v-6h6v6" stroke="#0FB88A" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      </span>
+      Housing Society Management
+    </div>
+    <h2>Transparent billing, easy payments, and clear communication — for every resident.</h2>
+    <p class="sub">One secure, role-based dashboard for admins, treasurers, and house owners across your society.</p>
+
+    <div class="badges">
+      <div class="badge"><span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7l8-4Z"/></svg></span>Secure Role-Based Access</div>
+      <div class="badge"><span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span>Digital Receipts</div>
+      <div class="badge"><span class="ico"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V5M4 19h16M8 15l3-4 3 3 4-6"/></svg></span>Audit-Ready Records</div>
+    </div>
+
+    <div class="mini-pb">
+      <div class="mini-pb-card">
+        <span class="stamp">Sunrise Heights CHS</span>
+        <div class="mini-pb-row"><span class="who">A-402 · R. Sharma</span><span class="amt">+ ₹4,500</span></div>
+        <div class="mini-pb-row"><span class="who">B-108 · Kavita Iyer</span><span class="amt">+ ₹4,500</span></div>
+        <div class="mini-pb-row"><span class="who">Current Balance</span><span class="amt">₹9,37,600</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT FORM CARD -->
+  <div class="form-card">
+    <div class="tabs" id="tabs" data-active="login">
+      <div class="tab-indicator"></div>
+      <button class="tab-btn active" id="tabLogin" type="button">Log In</button>
+      <button class="tab-btn" id="tabSignup" type="button">Create Account</button>
+    </div>
+
+    <!-- ===== LOGIN VIEW ===== -->
+    <div id="loginView">
+      <div class="form-head">
+        <h1 id="loginHeading">Welcome back, Resident</h1>
+        <p id="loginSub">Log in to view your bills, payments, and society notices.</p>
+      </div>
+
+      <div class="role-toggle" id="loginRoleToggle">
+        <button type="button" class="role-btn active" data-role="resident">
+          <div class="r-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.2"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"/></svg>Resident</div>
+          <div class="r-sub">House owner / tenant</div>
+        </button>
+        <button type="button" class="role-btn" data-role="admin">
+          <div class="r-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7l8-4Z"/></svg>Admin / Committee</div>
+          <div class="r-sub">Super Admin or Treasurer</div>
+        </button>
+      </div>
+
+      <form class="form" id="loginForm" novalidate>
+        <div class="field" id="loginIdField">
+          <label for="loginId">Email or Phone Number</label>
+          <div class="input-wrap">
+            <svg class="leading" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16v12H4z"/><path d="M4 7l8 6 8-6"/></svg>
+            <input type="text" id="loginId" placeholder="you@example.com or 98XXXXXXXX" autocomplete="username">
+          </div>
+          <span class="err-msg">Please enter your email or phone number.</span>
+        </div>
+
+        <div class="field" id="loginPwField">
+          <label for="loginPw">Password</label>
+          <div class="input-wrap">
+            <svg class="leading" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+            <input type="password" id="loginPw" placeholder="Enter your password" autocomplete="current-password">
+            <button type="button" class="toggle-eye" data-target="loginPw" aria-label="Show password">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <span class="err-msg">Password must be at least 6 characters.</span>
+        </div>
+
+        <div class="row-between">
+          <label class="checkline"><input type="checkbox">Remember me</label>
+          <a class="link-teal" href="#">Forgot password?</a>
+        </div>
+
+        <button type="submit" class="btn btn-accent btn-block" id="loginSubmit">Log In as Resident</button>
+      </form>
+
+      <div class="divider">or continue with</div>
+      <div class="oauth-row">
+        <button class="oauth-btn" type="button">
+          <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.04 12.27c0-.82-.07-1.42-.22-2.05H12v3.72h6.32c-.13 1.03-.82 2.58-2.36 3.62l-.02.14 3.43 2.62.24.02c2.18-1.99 3.43-4.92 3.43-8.07Z"/><path fill="#34A853" d="M12 23.5c3.11 0 5.72-1.01 7.63-2.75l-3.64-2.78c-.98.67-2.3 1.14-3.99 1.14-3.05 0-5.63-1.99-6.55-4.74l-.14.01-3.57 2.72-.05.13C3.6 20.98 7.5 23.5 12 23.5Z"/><path fill="#FBBC05" d="M5.45 14.37a6.9 6.9 0 0 1-.38-2.24c0-.78.14-1.53.37-2.24l-.01-.15L1.8 7l-.12.06A11.5 11.5 0 0 0 .5 12.13c0 1.86.45 3.62 1.24 5.17l3.71-2.93Z"/><path fill="#EA4335" d="M12 4.86c2.16 0 3.62.93 4.45 1.71l3.25-3.16C17.71 1.62 15.11.5 12 .5 7.5.5 3.6 3.02 1.68 6.94l3.76 2.93c.93-2.75 3.51-4.74 6.56-5.01Z"/></svg>
+          Google
+        </button>
+        <button class="oauth-btn" type="button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M9 18h6"/></svg>
+          OTP Login
+        </button>
+      </div>
+
+      <div class="switch-line">New to Housing Society Management? <a class="link-teal" id="goSignup" href="#">Create an account</a></div>
+    </div>
+
+    <!-- ===== SIGNUP VIEW ===== -->
+    <div id="signupView" style="display:none;">
+      <div class="form-head">
+        <h1 id="signupHeading">Create your Resident account</h1>
+        <p id="signupSub">Set up your profile to view bills, pay maintenance, and raise complaints.</p>
+      </div>
+
+      <div class="role-toggle" id="signupRoleToggle">
+        <button type="button" class="role-btn active" data-role="resident">
+          <div class="r-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.2"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"/></svg>Resident</div>
+          <div class="r-sub">House owner / tenant</div>
+        </button>
+        <button type="button" class="role-btn" data-role="admin">
+          <div class="r-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7l8-4Z"/></svg>Admin / Committee</div>
+          <div class="r-sub">Super Admin or Treasurer</div>
+        </button>
+      </div>
+
+      <form class="form" id="signupForm" novalidate>
+        <div class="form-row">
+          <div class="field" id="fullNameField">
+            <label for="fullName">Full Name</label>
+            <div class="input-wrap">
+              <svg class="leading" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.2"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"/></svg>
+              <input type="text" id="fullName" placeholder="e.g. Rajesh Sane">
+            </div>
+            <span class="err-msg">Please enter your full name.</span>
+          </div>
+          <div class="field" id="societyField">
+            <label for="societyName">Society Name</label>
+            <div class="input-wrap">
+              <svg class="leading" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 21V9.5L12 4l8 5.5V21H4Z"/></svg>
+              <input type="text" id="societyName" placeholder="e.g. Sunrise Heights CHS">
+            </div>
+            <span class="err-msg">Please enter your society name.</span>
+          </div>
+        </div>
+
+        <div class="form-row" id="unitRow">
+          <div class="field" id="unitField">
+            <label for="unitNo" id="unitLabel">Flat / Unit No.</label>
+            <div class="input-wrap">
+              <svg class="leading" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h8M8 13h5"/></svg>
+              <input type="text" id="unitNo" placeholder="e.g. A-402">
+            </div>
+            <span class="err-msg">Please enter your unit number.</span>
+          </div>
+          <div class="field" id="phoneField">
+            <label for="phone">Phone Number</label>
+            <div class="input-wrap">
+              <svg class="leading" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg>
+              <input type="tel" id="phone" placeholder="98XXXXXXXX">
+            </div>
+            <span class="err-msg">Please enter a valid 10-digit phone number.</span>
+          </div>
+        </div>
+
+        <div class="field" id="emailField">
+          <label for="email">Email Address</label>
+          <div class="input-wrap">
+            <svg class="leading" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16v12H4z"/><path d="M4 7l8 6 8-6"/></svg>
+            <input type="email" id="email" placeholder="you@example.com">
+          </div>
+          <span class="err-msg">Please enter a valid email address.</span>
+        </div>
+
+        <div class="form-row">
+          <div class="field" id="pwField">
+            <label for="signupPw">Password</label>
+            <div class="input-wrap">
+              <svg class="leading" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+              <input type="password" id="signupPw" placeholder="Create a password" autocomplete="new-password">
+              <button type="button" class="toggle-eye" data-target="signupPw" aria-label="Show password">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+            <span class="err-msg">Password must be at least 6 characters.</span>
+          </div>
+          <div class="field" id="confirmField">
+            <label for="confirmPw">Confirm Password</label>
+            <div class="input-wrap">
+              <svg class="leading" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+              <input type="password" id="confirmPw" placeholder="Re-enter your password" autocomplete="new-password">
+              <button type="button" class="toggle-eye" data-target="confirmPw" aria-label="Show password">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+            <span class="err-msg">Passwords do not match.</span>
+          </div>
+        </div>
+
+        <label class="checkline">
+          <input type="checkbox" id="termsCheck">
+          I agree to the <a class="link-teal" href="#">Terms</a> &amp; <a class="link-teal" href="#">Privacy Policy</a>
+        </label>
+
+        <button type="submit" class="btn btn-accent btn-block" id="signupSubmit">Create Resident Account</button>
+      </form>
+
+      <div class="switch-line">Already have an account? <a class="link-teal" id="goLogin" href="#">Log in</a></div>
+    </div>
+
+    <!-- ===== SUCCESS STATE ===== -->
+    <div class="success-box" id="successBox">
+      <div class="success-icon">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6L9 17l-5-5"/></svg>
+      </div>
+      <h3 id="successTitle">You're all set!</h3>
+      <p id="successSub">This is a demo form — no account was actually created.</p>
+      <button class="btn btn-outline" style="margin-top:22px;border:1.5px solid var(--navy);color:var(--navy);background:transparent;" id="successBack">Back to Form</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const tabs = document.getElementById('tabs');
+  const tabLogin = document.getElementById('tabLogin');
+  const tabSignup = document.getElementById('tabSignup');
+  const loginView = document.getElementById('loginView');
+  const signupView = document.getElementById('signupView');
+  const successBox = document.getElementById('successBox');
+
+  function showLogin(){
+    tabs.setAttribute('data-active','login');
+    tabLogin.classList.add('active');
+    tabSignup.classList.remove('active');
+    loginView.style.display = 'block';
+    signupView.style.display = 'none';
+    successBox.classList.remove('show');
+  }
+  function showSignup(){
+    tabs.setAttribute('data-active','signup');
+    tabSignup.classList.add('active');
+    tabLogin.classList.remove('active');
+    signupView.style.display = 'block';
+    loginView.style.display = 'none';
+    successBox.classList.remove('show');
+  }
+  tabLogin.addEventListener('click', showLogin);
+  tabSignup.addEventListener('click', showSignup);
+  document.getElementById('goSignup').addEventListener('click', (e)=>{e.preventDefault(); showSignup();});
+  document.getElementById('goLogin').addEventListener('click', (e)=>{e.preventDefault(); showLogin();});
+
+  // Role toggle logic (shared behaviour for both login & signup)
+  function wireRoleToggle(container, onChange){
+    container.querySelectorAll('.role-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        container.querySelectorAll('.role-btn').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        onChange(btn.getAttribute('data-role'));
+      });
+    });
+  }
+
+  const loginHeading = document.getElementById('loginHeading');
+  const loginSub = document.getElementById('loginSub');
+  const loginSubmit = document.getElementById('loginSubmit');
+  wireRoleToggle(document.getElementById('loginRoleToggle'), (role)=>{
+    if(role === 'admin'){
+      loginHeading.textContent = 'Welcome back, Admin';
+      loginSub.textContent = 'Log in to manage billing, expenses, and society records.';
+      loginSubmit.textContent = 'Log In as Admin';
+    } else {
+      loginHeading.textContent = 'Welcome back, Resident';
+      loginSub.textContent = 'Log in to view your bills, payments, and society notices.';
+      loginSubmit.textContent = 'Log In as Resident';
+    }
+  });
+
+  const signupHeading = document.getElementById('signupHeading');
+  const signupSub = document.getElementById('signupSub');
+  const signupSubmit = document.getElementById('signupSubmit');
+  const unitLabel = document.getElementById('unitLabel');
+  const unitNo = document.getElementById('unitNo');
+  wireRoleToggle(document.getElementById('signupRoleToggle'), (role)=>{
+    if(role === 'admin'){
+      signupHeading.textContent = 'Create your Admin account';
+      signupSub.textContent = 'Set up committee access to manage billing, expenses, and reports.';
+      signupSubmit.textContent = 'Create Admin Account';
+      unitLabel.textContent = 'Designation';
+      unitNo.placeholder = 'e.g. Treasurer';
+    } else {
+      signupHeading.textContent = 'Create your Resident account';
+      signupSub.textContent = 'Set up your profile to view bills, pay maintenance, and raise complaints.';
+      signupSubmit.textContent = 'Create Resident Account';
+      unitLabel.textContent = 'Flat / Unit No.';
+      unitNo.placeholder = 'e.g. A-402';
+    }
+  });
+
+  // Password visibility toggle
+  document.querySelectorAll('.toggle-eye').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const target = document.getElementById(btn.getAttribute('data-target'));
+      target.type = target.type === 'password' ? 'text' : 'password';
+    });
+  });
+
+  // Simple inline validation helpers
+  function setInvalid(fieldEl, invalid){
+    fieldEl.classList.toggle('invalid', invalid);
+    const input = fieldEl.querySelector('input');
+    if(input) input.classList.toggle('err', invalid);
+  }
+
+  // Login form validation (demo only — no real auth)
+  document.getElementById('loginForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    const role = document.querySelector('#loginRoleToggle .role-btn.active').getAttribute('data-role');
+    if(role === 'admin'){
+      window.location.href = 'dashboard.html';
+    } else {
+      window.location.href = 'owner-dashboard.html';
+    }
+  });
+
+  // Signup form validation (demo only)
+  document.getElementById('signupForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    const role = document.querySelector('#signupRoleToggle .role-btn.active').getAttribute('data-role');
+    if(role === 'admin'){
+      window.location.href = 'dashboard.html';
+    } else {
+      window.location.href = 'owner-dashboard.html';
+    }
+  });
+
+  document.getElementById('successBack').addEventListener('click', ()=>{
+    successBox.classList.remove('show');
+    if(tabs.getAttribute('data-active') === 'signup'){ signupView.style.display='block'; } else { loginView.style.display='block'; }
+  });
+
+  // Handle URL query parameters for role selection
+  const urlParams = new URLSearchParams(window.location.search);
+  const initialRole = urlParams.get('role');
+  if(initialRole === 'admin') {
+    const adminBtnLogin = document.querySelector('#loginRoleToggle .role-btn[data-role="admin"]');
+    const adminBtnSignup = document.querySelector('#signupRoleToggle .role-btn[data-role="admin"]');
+    if(adminBtnLogin) adminBtnLogin.click();
+    if(adminBtnSignup) adminBtnSignup.click();
+  } else if (initialRole === 'resident') {
+    const resBtnLogin = document.querySelector('#loginRoleToggle .role-btn[data-role="resident"]');
+    const resBtnSignup = document.querySelector('#signupRoleToggle .role-btn[data-role="resident"]');
+    if(resBtnLogin) resBtnLogin.click();
+    if(resBtnSignup) resBtnSignup.click();
+  }
+</script>
+
+</body>
+</html>
