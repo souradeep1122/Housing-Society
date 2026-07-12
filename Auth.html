@@ -469,6 +469,12 @@
           </div>
         </div>
 
+        <!-- Admin info banner (hidden by default) -->
+        <div id="adminInfoBanner" style="display:none;align-items:flex-start;gap:10px;padding:12px 14px;background:rgba(15,184,138,0.07);border:1.5px solid rgba(15,184,138,0.28);border-radius:11px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--teal-deep)" stroke-width="2" style="flex:none;margin-top:1px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <p style="font-size:12.5px;color:var(--navy);line-height:1.55;">As an <strong>Admin</strong>, after creating your account you'll be taken to the <strong>Society Setup Wizard</strong> where you can add your society details, residents, and configure maintenance billing — all before your dashboard goes live.</p>
+        </div>
+
         <label class="checkline">
           <input type="checkbox" id="termsCheck">
           I agree to the <a class="link-teal" href="#">Terms</a> &amp; <a class="link-teal" href="#">Privacy Policy</a>
@@ -555,16 +561,18 @@
   wireRoleToggle(document.getElementById('signupRoleToggle'), (role)=>{
     if(role === 'admin'){
       signupHeading.textContent = 'Create your Admin account';
-      signupSub.textContent = 'Set up committee access to manage billing, expenses, and reports.';
-      signupSubmit.textContent = 'Create Admin Account';
+      signupSub.textContent = 'You will be taken to the society setup wizard after creating your account.';
+      signupSubmit.textContent = 'Create Admin Account & Set Up Society →';
       unitLabel.textContent = 'Designation';
-      unitNo.placeholder = 'e.g. Treasurer';
+      unitNo.placeholder = 'e.g. Secretary / Treasurer';
+      document.getElementById('adminInfoBanner').style.display = 'flex';
     } else {
       signupHeading.textContent = 'Create your Resident account';
       signupSub.textContent = 'Set up your profile to view bills, pay maintenance, and raise complaints.';
       signupSubmit.textContent = 'Create Resident Account';
       unitLabel.textContent = 'Flat / Unit No.';
       unitNo.placeholder = 'e.g. A-402';
+      document.getElementById('adminInfoBanner').style.display = 'none';
     }
   });
 
@@ -598,9 +606,33 @@
   document.getElementById('signupForm').addEventListener('submit', function(e){
     e.preventDefault();
     const role = document.querySelector('#signupRoleToggle .role-btn.active').getAttribute('data-role');
+    const nameVal  = document.getElementById('fullName').value.trim();
+    const emailVal = document.getElementById('email').value.trim();
+    // Basic client-side validation
+    let ok = true;
+    if(!nameVal){ document.getElementById('fullNameField').classList.add('invalid'); ok=false; } else { document.getElementById('fullNameField').classList.remove('invalid'); }
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)){ document.getElementById('emailField').classList.add('invalid'); ok=false; } else { document.getElementById('emailField').classList.remove('invalid'); }
+    if(!ok) return;
     if(role === 'admin'){
-      window.location.href = 'dashboard.html';
+      // Save admin credentials so create-society page can pre-fill & dashboard can greet admin
+      try{
+        localStorage.setItem('hsm-admin', JSON.stringify({
+          name: nameVal,
+          email: emailVal,
+          role: 'admin',
+          designation: document.getElementById('unitNo').value.trim()
+        }));
+        localStorage.removeItem('hsm-society'); // Clear any old society
+      }catch(ex){}
+      window.location.href = 'create-society.html';
     } else {
+      try{
+        localStorage.setItem('hsm-admin', JSON.stringify({
+          name: nameVal,
+          email: emailVal,
+          role: 'resident'
+        }));
+      }catch(ex){}
       window.location.href = 'owner-dashboard.html';
     }
   });

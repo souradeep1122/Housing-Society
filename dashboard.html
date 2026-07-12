@@ -589,10 +589,18 @@
     </button>
 
     <div class="nav-group-label">Account</div>
+    <button class="nav-item" data-view="account">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      <span>Account Details</span>
+    </button>
     <button class="nav-item" data-view="settings">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       <span>Settings</span>
     </button>
+    <a href="index.html" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      <span>Logout</span>
+    </a>
 
     <div class="sidebar-foot">
       <p id="sidebarNote">Maintenance for July is due on the 10th. 6 units are yet to pay.</p>
@@ -817,6 +825,34 @@
           </button>
         </div>
         <div class="notice-list" id="noticeList"></div>
+      </section>
+
+      <!-- ============ ACCOUNT DETAILS ============ -->
+      <section class="view" id="view-account">
+        <div class="view-head">
+          <div>
+            <h2>Account Details</h2>
+            <p>View your society information and maintenance rules.</p>
+          </div>
+        </div>
+        <div class="settings-grid">
+          <div class="panel">
+            <h3 style="margin-top:0;font-size:.95rem;padding-bottom:12px;border-bottom:1px solid var(--line);">Society Information</h3>
+            <div class="field" style="margin-top:14px;"><label>Society name</label><div id="accName" style="font-weight:600;font-size:.9rem;">—</div></div>
+            <div class="field"><label>Registration number</label><div id="accReg" style="font-weight:600;font-size:.9rem;">—</div></div>
+            <div class="field"><label>City / State</label><div id="accCity" style="font-weight:600;font-size:.9rem;">—</div></div>
+            <div class="field"><label>Total units</label><div id="accUnits" style="font-weight:600;font-size:.9rem;">—</div></div>
+          </div>
+          <div class="panel">
+            <h3 style="margin-top:0;font-size:.95rem;padding-bottom:12px;border-bottom:1px solid var(--line);">Maintenance Rules</h3>
+            <div class="field" style="margin-top:14px;"><label>Billing method</label><div id="accMethod" style="font-weight:600;font-size:.9rem;color:var(--teal-deep);">—</div></div>
+            <div class="field"><label>Rate / Amount</label><div id="accRate" style="font-weight:600;font-size:.9rem;">—</div></div>
+            <div class="field"><label>Due Date</label><div id="accDue" style="font-weight:600;font-size:.9rem;">—</div></div>
+            <h3 style="margin-top:24px;font-size:.95rem;padding-bottom:12px;border-bottom:1px solid var(--line);">Admin Details</h3>
+            <div class="field" style="margin-top:14px;"><label>Admin Name</label><div id="accAdminName" style="font-weight:600;font-size:.9rem;">—</div></div>
+            <div class="field"><label>Admin Email</label><div id="accAdminEmail" style="font-weight:600;font-size:.9rem;">—</div></div>
+          </div>
+        </div>
       </section>
 
       <!-- ============ SETTINGS ============ -->
@@ -1652,6 +1688,7 @@
     maintenance: ['Maintenance', 'July 2026 billing cycle'],
     expenses: ['Expenses', 'July 2026'],
     notices: ['Notices', 'Society announcements'],
+    account: ['Account Details', 'Your society profile'],
     settings: ['Settings', 'Society profile & preferences']
   };
 
@@ -1734,6 +1771,113 @@
   /* ============================================================
      INITIAL RENDER
   ============================================================ */
+
+  /* --- Hydrate from Society Creation Data (localStorage) --- */
+  (function hydrateSociety(){
+    try {
+      var soc  = JSON.parse(localStorage.getItem('hsm-society') || 'null');
+      var adm  = JSON.parse(localStorage.getItem('hsm-admin')   || 'null');
+
+      // Combine: admin name from signup page OR from society form
+      var adminName  = (soc && soc.adminName)  || (adm && adm.name)  || 'Admin';
+      var adminEmail = (soc && soc.adminEmail) || (adm && adm.email) || '';
+      var socName    = (soc && soc.name)       || 'Your Society';
+      var totalUnits = (soc && soc.totalUnits) ? soc.totalUnits : null;
+      var monthlyTotal = (soc && soc.monthlyTotal) ? soc.monthlyTotal : null;
+      var residentCount = (soc && soc.residents) ? soc.residents.length : null;
+      var dueDay = (soc && soc.dueDay) ? soc.dueDay : '5';
+
+      // Helper: ordinal suffix
+      function ord(n){ var s=['th','st','nd','rd'], v=n%100; return n+(s[(v-20)%10]||s[v]||s[0]); }
+
+      // -- Sidebar brand: society name
+      var brandSpan = document.querySelector('.sidebar .brand span');
+      if (brandSpan) {
+        var abbr = socName.split(/\s+/).map(function(w){ return w[0]; }).join('').slice(0,2).toUpperCase();
+        brandSpan.innerHTML = socName + '<br><small>Housing Management</small>';
+        var mark = document.querySelector('.sidebar .brand .mark');
+        if (mark) mark.textContent = abbr || 'HS';
+      }
+
+      // -- Topbar: admin profile name + avatar initials
+      var avatarEl = document.querySelector('.topbar .avatar');
+      var nameEl   = document.querySelector('.topbar .who b');
+      var roleEl   = document.querySelector('.topbar .who small');
+      if (avatarEl) avatarEl.textContent = adminName.split(/\s+/).map(function(w){return w[0];}).join('').slice(0,2).toUpperCase();
+      if (nameEl)   nameEl.textContent   = adminName;
+      if (roleEl)   roleEl.textContent   = (adm && adm.designation) ? adm.designation : 'Society Admin';
+
+      // -- Dashboard welcome heading
+      var welcomeH = document.querySelector('#view-dashboard .view-head h2');
+      var welcomeP = document.querySelector('#view-dashboard .view-head p');
+      if (welcomeH) welcomeH.textContent = 'Welcome back, ' + adminName.split(' ')[0] + '!';
+      if (welcomeP && soc) welcomeP.textContent = 'Here\u2019s how ' + socName + ' is doing this month.';
+
+      // -- Stat card: Total units
+      if (totalUnits !== null) {
+        var unitStatVal = document.querySelector('.stat-card.c1 .stat-value');
+        if (unitStatVal) unitStatVal.textContent = totalUnits;
+        var unitDelta = document.getElementById('occupiedDelta');
+        if (unitDelta) unitDelta.textContent = residentCount + ' registered';
+      }
+
+      // -- Stat card: Monthly collection (set as billed amount for new society)
+      if (monthlyTotal !== null) {
+        var collEl = document.getElementById('statCollectedValue');
+        if (collEl) collEl.textContent = '\u20b9' + monthlyTotal.toLocaleString('en-IN');
+      }
+
+      // -- Sidebar foot note
+      var noteEl = document.getElementById('sidebarNote');
+      if (noteEl && soc) noteEl.textContent = 'Maintenance for ' + socName + ' is due on the ' + ord(parseInt(dueDay)) + '. Invite residents to get started.';
+
+      // -- Page date subtitle
+      var pageSub = document.getElementById('pageSub');
+      if (pageSub) {
+        var now = new Date();
+        var days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+        var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        var dateStr = days[now.getDay()] + ', ' + now.getDate() + ' ' + months[now.getMonth()] + ' ' + now.getFullYear();
+        titles.dashboard[1] = dateStr;
+        if(document.querySelector('.nav-item.active').dataset.view === 'dashboard'){
+          pageSub.textContent = dateStr;
+        }
+      }
+
+      // -- Hydrate Account Details Tab
+      if (soc) {
+        var accName = document.getElementById('accName');
+        var accReg = document.getElementById('accReg');
+        var accCity = document.getElementById('accCity');
+        var accUnits = document.getElementById('accUnits');
+        var accMethod = document.getElementById('accMethod');
+        var accRate = document.getElementById('accRate');
+        var accDue = document.getElementById('accDue');
+        var accAdminName = document.getElementById('accAdminName');
+        var accAdminEmail = document.getElementById('accAdminEmail');
+
+        if(accName) accName.textContent = soc.name || '—';
+        if(accReg) accReg.textContent = soc.reg || '—';
+        if(accCity) accCity.textContent = (soc.city || '') + (soc.pin ? ' - ' + soc.pin : '');
+        if(accUnits) accUnits.textContent = (soc.totalUnits || '0') + ' units across ' + (soc.wingsNum || '1') + ' wings';
+        
+        if(accMethod) {
+          accMethod.textContent = soc.rule === 'fixed' ? 'Fixed Fee per Resident' : (soc.rule === 'sqft' ? 'Per Sq. Ft. Area' : 'Custom Flat-wise Fee');
+        }
+        if(accRate) {
+          if (soc.rule === 'sqft') accRate.textContent = '₹' + (soc.rate || '0') + ' per sq.ft.';
+          else if (soc.rule === 'fixed') accRate.textContent = '₹' + (soc.rate || '0') + ' per flat';
+          else accRate.textContent = 'Variable per flat';
+        }
+        if(accDue) accDue.textContent = (soc.dueDay || '5') + 'th of every month';
+
+        if(accAdminName) accAdminName.textContent = adminName || '—';
+        if(accAdminEmail) accAdminEmail.textContent = adminEmail || '—';
+      }
+
+    } catch(ex){ /* Graceful fallback to demo data */ }
+  })();
+
   applyTheme(currentTheme());
   renderAll();
 
